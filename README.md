@@ -89,5 +89,17 @@ To enable proxy on every reboot
 ```sudo systemctl enable lpproxy.service```
 
 
+# Compile from sources
 
+First, download and install [Golang](https://golang.org/), then clone the project and compile:
+```
+git clone git@github.com:interactive32/lpproxy.git
+cd lpproxy
+go build
+```
+
+You can also cross compile for specific architecture:
+```
+env GOOS=windows GOARCH=amd64 go build
+```
 
