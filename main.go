@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -102,7 +102,7 @@ func LinkpreviewProxyHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 
 	cr := CachedResponse{}
-	cr.Body, err = io.ReadAll(resp.Body)
+	cr.Body, err = ioutil.ReadAll(resp.Body)
 	cr.Status = resp.StatusCode
 	if err != nil {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
