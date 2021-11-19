@@ -1,9 +1,14 @@
 # LinkPreview.net Proxy Server with Caching
 
 ## Description
-LinkPreview.net Proxy Server with Caching and no 3rd party dependencies written in Go.
+LinkPreview API/Image Proxy Server with Caching written in Go.
 
-You can use this as a proxy server for LinkPreview API requests. It will add a simple caching layer and eliminate the need to expose your API keys on the frontend.
+Features:
+
+* In-memory caching layer for API requests
+* Eliminate the need to expose your LinkPreview API keys on the frontend
+* Image proxy to prevent leaking client IP addresses
+* Simple Referer header protection (accept requests from your domain only)
 
 ## Installation
 
@@ -33,8 +38,18 @@ openssl req -new -x509 -days 365 -nodes -out cert.pem -keyout cert.key
 
 Make sure your proxy is running, then simply use this instead of api.linkpreview.net endpoint:
 
-http://your-ip-address/?q=http://google.com
+```
+http://your-ip-address/linkpreview/?q=http://google.com
+```
 
+
+Serve images through your proxy:
+
+```
+http://your-ip-address/imageproxy/?src=http://google.com/logo.png
+```
+
+For more options on image proxy, see https://github.com/willnorris/imageproxy
 
 ## Installing as a service
 

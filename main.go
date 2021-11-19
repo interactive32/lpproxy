@@ -8,27 +8,36 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/muesli/cache2go"
+	"willnorris.com/go/imageproxy"
 )
 
-const linkpreviewAPI = "https://api.linkpreview.net"
+// LinkpreviewAPI endpoint
+var LinkpreviewAPI = "https://api.linkpreview.net"
 
 var linkpreviewKey = ""
 
-var cache *cache2go.CacheTable
+// Cache engine for the app
+var Cache *cache2go.CacheTable
 
-type cachedResponse struct {
-	body   []byte
-	status int
+// CachedResponse struct
+type CachedResponse struct {
+	Body   []byte
+	Status int
 }
 
 type lpreq struct {
 	Key    string `json:"key"`
 	Q      string `json:"q"`
 	Fields string `json:"fields"`
+}
+
+func init() {
+	Cache = cache2go.Cache("myCache")
 }
 
 func main() {
@@ -41,9 +50,8 @@ func main() {
 	addr := os.Getenv("ADDR")
 	linkpreviewKey = os.Getenv("LINK_PREVIEW_KEY")
 
-	cache = cache2go.Cache("myCache")
-
-	http.HandleFunc("/", proxyHandler)
+	http.HandleFunc("/linkpreview/", MWrefererCheck(os.Getenv("REFERER"), LinkpreviewProxyHandler))
+	http.HandleFunc("/imageproxy/", MWrefererCheck(os.Getenv("REFERER"), ImageProxyHandler))
 
 	if os.Getenv("SSL_CERT") != "" && os.Getenv("SSL_KEY") != "" {
 		fmt.Printf("Proxy secure server started on https://%s\n", addr)
@@ -59,18 +67,21 @@ func main() {
 
 }
 
-func proxyHandler(w http.ResponseWriter, r *http.Request) {
+// LinkpreviewProxyHandler is a Proxy for the API
+func LinkpreviewProxyHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
 
 	query := r.URL.Query().Get("q")
 
 	// keep results in cache for one day (based on the key scheme)
 	cacheKey := fmt.Sprintf("%s%d", query, time.Now().Day())
 
-	cached, err := cache.Value(cacheKey)
+	cached, err := Cache.Value(cacheKey)
 	if err == nil {
 		fmt.Println("Serving from Cache: " + query)
-		w.WriteHeader(cached.Data().(*cachedResponse).status)
-		w.Write(cached.Data().(*cachedResponse).body)
+		w.WriteHeader(cached.Data().(*CachedResponse).Status)
+		w.Write(cached.Data().(*CachedResponse).Body)
 		return
 	}
 
@@ -82,7 +93,7 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Requesting from the API: " + query)
 	client := &http.Client{}
-	req, _ := http.NewRequest("POST", linkpreviewAPI, bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", LinkpreviewAPI, bytes.NewBuffer(body))
 	resp, err := client.Do(req)
 	if err != nil {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
@@ -90,17 +101,46 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	cr := cachedResponse{}
-	cr.body, err = io.ReadAll(resp.Body)
-	cr.status = resp.StatusCode
+	cr := CachedResponse{}
+	cr.Body, err = io.ReadAll(resp.Body)
+	cr.Status = resp.StatusCode
 	if err != nil {
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(cr.status)
-	w.Write(cr.body)
+	w.WriteHeader(cr.Status)
+	w.Write(cr.Body)
 
 	// add to cache and automatically expire unused after one day
-	cache.Add(cacheKey, 24*time.Hour, &cr)
+	Cache.Add(cacheKey, 24*time.Hour, &cr)
+}
+
+// ImageProxyHandler is a Proxy for serving images
+// for advanced usage see https://github.com/willnorris/imageproxy
+func ImageProxyHandler(w http.ResponseWriter, r *http.Request) {
+	p := imageproxy.NewProxy(nil, nil)
+
+	// convert query input to root path, imageproxy will be confused otherwise
+	r.URL.Path = "/" + r.URL.Query().Get("src")
+	p.ServeHTTP(w, r)
+}
+
+// MWrefererCheck is a Middleware that can protect agains unknown referrers
+func MWrefererCheck(referer string, next http.HandlerFunc) http.HandlerFunc {
+
+	// skip if not configured
+	if referer == "" {
+		return next
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		if !strings.HasPrefix(r.Referer(), referer) {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+
+		next(w, r)
+	}
 }
