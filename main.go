@@ -42,6 +42,8 @@ func init() {
 
 func main() {
 
+	fmt.Println("LinkPreview Proxy Server v2.0.0")
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")

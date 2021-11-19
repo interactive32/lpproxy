@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	proxy "linkpreview.net/proxy/v1"
+	proxy "linkpreview.net/proxy/v2"
 )
 
 func TestLinkpreviewProxy(t *testing.T) {

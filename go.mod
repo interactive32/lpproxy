@@ -1,10 +1,11 @@
-module linkpreview.net/proxy/v1
+module linkpreview.net/proxy/v2
 
 go 1.17
 
 require (
 	github.com/joho/godotenv v1.4.0
 	github.com/muesli/cache2go v0.0.0-20211005105910-8e46465cca4a
+	github.com/stretchr/testify v1.7.0
 	willnorris.com/go/imageproxy v0.11.2
 )
 
@@ -25,7 +26,6 @@ require (
 	github.com/prometheus/common v0.26.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
 	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
