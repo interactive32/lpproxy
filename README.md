@@ -15,7 +15,10 @@ Features:
 
 How to use:
 
-1. Download official executable. [Download for Linux 64bit](https://github.com/interactive32/lpproxy/releases/download/v1.0.0/lpproxy-1.0.0.linux-amd64.zip)
+1. Download official executable. 
+[Download for Linux 64bit](https://github.com/interactive32/lpproxy/releases/download/v2.0.0/lpproxy-2.0.0.linux-amd64.tar.gz)
+[Download for Windows 64bit](https://github.com/interactive32/lpproxy/releases/download/v2.0.0/lpproxy-2.0.0.windows-amd64.zip)
+
 2. Create .env file configuration, see .env.example
 
 
