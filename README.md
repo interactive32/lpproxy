@@ -46,7 +46,7 @@ http://your-ip-address/linkpreview/?q=http://google.com
 Serve images through your proxy:
 
 ```
-http://your-ip-address/imageproxy/?src=http://google.com/logo.png
+http://your-ip-address/imageproxy/?src=https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_150x54dp.png
 ```
 
 For more options on image proxy, see https://github.com/willnorris/imageproxy
